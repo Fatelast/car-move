@@ -1,0 +1,8 @@
+{
+  "name": "SaveMyParking (挪车宝)",
+  "description": "Don't pay for that extra hour. A precision parking timer that reminds you before the billing cycle ticks over. Includes AI helper to parse complex parking rules.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
