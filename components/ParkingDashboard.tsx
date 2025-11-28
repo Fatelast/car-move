@@ -10,15 +10,27 @@ interface ParkingDashboardProps {
 
 const ParkingDashboard: React.FC<ParkingDashboardProps> = ({ config, onStop }) => {
   const [now, setNow] = useState(Date.now());
-  const [permission, setPermission] = useState(Notification.permission);
+  
+  // Safely initialize permission state
+  const [permission, setPermission] = useState(() => {
+    if (typeof Notification !== 'undefined') {
+      return Notification.permission;
+    }
+    return 'default';
+  });
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
   const [lastNotificationKey, setLastNotificationKey] = useState<string>("");
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then(setPermission);
+    
+    // Safely request permission only if API exists
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission()
+        .then(setPermission)
+        .catch(err => console.error("Failed to request notification permission:", err));
     }
     return () => clearInterval(timer);
   }, []);
@@ -53,13 +65,19 @@ const ParkingDashboard: React.FC<ParkingDashboardProps> = ({ config, onStop }) =
   useEffect(() => {
     if (status === ParkingStatus.WARNING || status === ParkingStatus.DANGER) {
       const currentKey = `${cycleCount}-${status}`;
-      if (lastNotificationKey !== currentKey && permission === 'granted') {
+      // Safely check for Notification support before creating one
+      if (lastNotificationKey !== currentKey && permission === 'granted' && typeof Notification !== 'undefined') {
          const remainingMinutesRaw = Math.ceil(remainingMs / 60000);
-         new Notification("挪车宝提醒", {
-           body: `快去挪车！距离下一个计费周期仅剩 ${remainingMinutesRaw} 分钟！`,
-           icon: '/vite.svg',
-           tag: 'parking-reminder'
-         });
+         try {
+           new Notification("挪车宝提醒", {
+             body: `快去挪车！距离下一个计费周期仅剩 ${remainingMinutesRaw} 分钟！`,
+             icon: '/vite.svg',
+             tag: 'parking-reminder'
+           });
+         } catch (e) {
+           console.error("Notification creation failed", e);
+         }
+         
          const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
          audio.play().catch(e => console.log("Audio play failed interaction required", e));
          setLastNotificationKey(currentKey);

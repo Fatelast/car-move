@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ParkingConfig, ParkingRecord } from './types';
 import ParkingSetup from './components/ParkingSetup';
@@ -49,12 +48,29 @@ const App: React.FC = () => {
   }, []);
 
   const handleStart = (newConfig: ParkingConfig) => {
+    // 1. Set State immediately so UI updates
     setConfig(newConfig);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+
+    // 2. Try saving to localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+    } catch (e) {
+      console.error("Failed to save to localStorage, likely quota exceeded.", e);
+      // Fallback: If image caused the issue, try saving without image
+      if (newConfig.locationImage) {
+        const fallbackConfig = { ...newConfig, locationImage: undefined };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackConfig));
+          console.log("Saved config without image as fallback.");
+        } catch (e2) {
+          console.error("Failed to save even without image.", e2);
+        }
+      }
+    }
     
-    // Ask for notification permission early
-    if (Notification.permission === 'default') {
-      Notification.requestPermission();
+    // 3. Request Notification permission safely
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(err => console.error("Notification permission error", err));
     }
   };
 
@@ -89,7 +105,12 @@ const App: React.FC = () => {
 
         const updatedHistory = [...history, newRecord];
         setHistory(updatedHistory);
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+        
+        try {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+        } catch (e) {
+            console.error("Failed to save history to local storage", e);
+        }
     }
 
     setConfig(null);
