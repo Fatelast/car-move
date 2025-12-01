@@ -4,7 +4,7 @@ import { AIParsedRule } from "../types";
 // Initialize the Gemini API client
 // Note: In a real production app, ensure API_KEY is handled securely.
 // For this environment, we use VITE_GEMINI_API_KEY.
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || process.env.GEMINI_API_KEY;
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || process.env.GEMINI_API_KEY || 'AIzaSyAigxFqzj_IzICYOylHU9MfTqfElNabBTI';
 const ai = new GoogleGenAI({ apiKey });
 
 export const parseParkingRuleWithGemini = async (text: string): Promise<AIParsedRule | null> => {
