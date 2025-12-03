@@ -1,0 +1,87 @@
+<!-- components/parking-dashboard/parking-dashboard.wxml -->
+<view class="dashboard-container animate-fade-in">
+    <!-- Header Info -->
+    <view class="header-card">
+        <view class="info-block">
+            <view class="label">当前已停</view>
+            <view class="value">{{totalDurationFormatted}}</view>
+        </view>
+        <view class="info-block right">
+            <view class="label">正在计费</view>
+            <view class="value highlight">第 {{cycleCount}} 周期</view>
+        </view>
+    </view>
+    <!-- Donut Chart (CSS Conic Gradient) -->
+    <view class="chart-container">
+        <view class="chart-bg-blur" style="background-color: {{statusColor}}"></view>
+        <view class="donut-chart" style="background: conic-gradient({{statusColor}} {{progressPercentage}}%, #fff7ed 0);">
+            <view class="donut-hole">
+                <view class="center-content">
+                    <view class="center-label">距离下一周期</view>
+                    <view class="center-time {{status === 'DANGER' ? 'danger' : ''}} {{status === 'WARNING' ? 'warning' : ''}}">
+                        {{remainingMinutes}}:{{remainingSeconds}}
+                    </view>
+                    <view class="status-badge {{status === 'DANGER' ? 'danger' : 'warning'}}" wx:if="{{status !== 'SAFE'}}">
+                        <text class="icon-alert">⚠️</text>
+                        <text>{{status === 'DANGER' ? '必须挪车' : '准备挪车'}}</text>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+    <!-- Action Area -->
+    <view class="action-area">
+        <button class="location-btn" wx:if="{{config.locationImage}}" bindtap="toggleImageModal">
+            <text class="icon-pin">📍</text>
+            查看停车位置
+        </button>
+        <view class="status-card {{status === 'DANGER' ? 'danger' : (status === 'WARNING' ? 'warning' : 'safe')}}">
+            <view class="icon-status">
+                <text wx:if="{{status === 'SAFE'}}">✅</text>
+                <text wx:else>🔔</text>
+            </view>
+            <view class="status-text">
+                <view class="status-title">
+                    <block wx:if="{{status === 'SAFE'}}">时间充裕</block>
+                    <block wx:elif="{{status === 'WARNING'}}">注意时间</block>
+                    <block wx:else>立即行动！</block>
+                </view>
+                <view class="status-desc">
+                    <block wx:if="{{status === 'SAFE'}}">
+                        距离提醒还有 {{remainingMinutes - config.reminderMinutes > 0 ? remainingMinutes - config.reminderMinutes : 0}} 分钟。您可以安心办事。
+                    </block>
+                    <block wx:else>为了省下那一个周期的停车费，建议您现在前往取车。</block>
+                </view>
+            </view>
+        </view>
+        <button class="stop-btn" bindtap="showStopConfirm">
+            <text class="icon-stop">🛑</text>
+            结束停车 / 已离开
+        </button>
+    </view>
+    <!-- Image Modal -->
+    <view class="modal-mask" wx:if="{{showImageModal}}" bindtap="toggleImageModal">
+        <view class="modal-content" catchtap="true">
+            <view class="close-btn" bindtap="toggleImageModal">✕</view>
+            <image src="{{config.locationImage}}" mode="aspectFit" class="modal-image" bindtap="previewImage" />
+            <view class="modal-footer">
+                <text class="icon-pin">📍</text>
+                您的停车位置快照
+            </view>
+        </view>
+    </view>
+    <!-- Stop Confirmation Modal -->
+    <view class="modal-mask" wx:if="{{showStopConfirm}}" bindtap="hideStopConfirm">
+        <view class="confirm-modal" catchtap="true">
+            <view class="confirm-icon-bg">
+                <text class="confirm-icon">⚠️</text>
+            </view>
+            <view class="confirm-title">结束停车?</view>
+            <view class="confirm-desc">这将清除当前的计时和照片。确认您已经把车开走了吗？</view>
+            <view class="confirm-actions">
+                <button class="cancel-btn" bindtap="hideStopConfirm">取消</button>
+                <button class="confirm-btn" bindtap="onStop">确定结束</button>
+            </view>
+        </view>
+    </view>
+</view>

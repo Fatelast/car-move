@@ -1,0 +1,74 @@
+<!-- components/parking-history/parking-history.wxml -->
+<view class="history-container animate-fade-in">
+    <!-- Header -->
+    <view class="header">
+        <view class="back-btn" bindtap="onBack">
+            <text class="icon-back">←</text>
+        </view>
+        <view class="title">停车记录</view>
+        <view class="spacer"></view>
+    </view>
+    <!-- List -->
+    <scroll-view scroll-y class="list-scroll">
+        <block wx:if="{{formattedRecords.length === 0}}">
+            <view class="empty-state">
+                <view class="empty-icon-bg">
+                    <text class="icon-calendar">📅</text>
+                </view>
+                <text class="empty-text">暂无停车记录</text>
+            </view>
+        </block>
+        <block wx:else>
+            <view class="list-content">
+                <block wx:for="{{formattedRecords}}" wx:key="id">
+                    <view class="record-card">
+                        <view class="card-top">
+                            <view class="date-info">
+                                <text class="icon-cal-sm">📅</text>
+                                <text>{{item.formattedDate}}</text>
+                            </view>
+                            <view class="cost-info">
+                                <view class="cycle-badge">{{item.costCycleCount}}个周期</view>
+                                <view class="price-badge">
+                                    <text class="currency">¥</text>
+                                    {{item.totalCost || 0}}
+                                </view>
+                            </view>
+                        </view>
+                        <view class="location-row">
+                            <view class="pin-icon-bg">
+                                <text class="icon-pin">📍</text>
+                            </view>
+                            <view class="location-text">
+                                <view class="location-name">{{item.locationName || "未记录地点"}}</view>
+                                <view class="location-sub" wx:if="{{item.locationName}}">
+                                    已存档位置信息
+                                </view>
+                                <view class="location-sub italic" wx:else>无详细位置描述</view>
+                            </view>
+                        </view>
+                        <view class="card-bottom">
+                            <view class="duration-label">
+                                <text class="icon-clock">🕒</text>
+                                停车时长
+                            </view>
+                            <view class="duration-value-group">
+                                <text class="unit-cost" wx:if="{{item.cycleCost}}">
+                                    (¥{{item.cycleCost}}/周期)
+                                </text>
+                                <text class="duration-val">{{item.formattedDuration}}</text>
+                            </view>
+                        </view>
+                    </view>
+                </block>
+            </view>
+        </block>
+    </scroll-view>
+    <!-- Footer -->
+    <view class="footer" wx:if="{{formattedRecords.length > 0}}">
+        <view class="clear-btn" bindtap="onClear">
+            <text class="icon-trash">🗑️</text>
+            清空历史记录
+        </view>
+    </view>
+</view>

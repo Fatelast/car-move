@@ -1,0 +1,30 @@
+<!-- index.wxml -->
+<view class="container">
+    <!-- Background Mesh -->
+    <view class="bg-mesh">
+        <view class="blob blob-1"></view>
+        <view class="blob blob-2"></view>
+    </view>
+    <view class="content">
+        <block wx:if="{{currentView === 'history'}}">
+            <parking-history records="{{history}}" bind:back="handleBackToHome" bind:clear="handleClearHistory" />
+        </block>
+        <block wx:else>
+            <block wx:if="{{!config}}">
+                <parking-setup bind:start="handleStart" bind:viewHistory="handleViewHistory" />
+            </block>
+            <block wx:else>
+                <parking-dashboard config="{{config}}" bind:stop="handleStop" />
+            </block>
+        </block>
+    </view>
+    <view class="footer" wx:if="{{currentView === 'home' && !config}}">
+        <view class="footer-content">
+            <view class="icon-bg">
+                <image src="/assets/car.png" class="icon-car" />
+                <!-- Placeholder for icon -->
+            </view>
+            <text>SaveMyParking • 挪车宝</text>
+        </view>
+    </view>
+</view>

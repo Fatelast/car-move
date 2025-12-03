@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "parking-setup": "/components/parking-setup/parking-setup",
+    "parking-dashboard": "/components/parking-dashboard/parking-dashboard",
+    "parking-history": "/components/parking-history/parking-history"
+  },
+  "navigationBarTitleText": "挪车宝"
+}

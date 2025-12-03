@@ -1,0 +1,36 @@
+{
+  "miniprogramRoot": "xiaochengxu/",
+  "appid": "wx0370973e56812c0b",
+  "compileType": "miniprogram",
+  "libVersion": "3.12.0",
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "setting": {
+    "coverView": true,
+    "es6": true,
+    "postcss": true,
+    "minified": true,
+    "enhance": true,
+    "showShadowRootInWxmlPanel": true,
+    "packNpmManually": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "./xiaochengxu/package.json",
+        "miniprogramNpmDistDir": "./xiaochengxu/"
+      }
+    ],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  },
+  "srcMiniprogramRoot": "xiaochengxu/"
+}

@@ -1,0 +1,150 @@
+<!-- components/parking-setup/parking-setup.wxml -->
+<view class="setup-container animate-slide-up">
+    <!-- Top Bar -->
+    <view class="top-bar">
+        <button class="history-btn" bindtap="onViewHistory">
+            <text class="icon-history">🕒</text>
+            历史记录
+        </button>
+    </view>
+    <!-- Brand Header -->
+    <view class="header">
+        <view class="logo-container">
+            <view class="logo-bg"></view>
+            <view class="logo">
+                <text class="icon-timer">⏱️</text>
+            </view>
+        </view>
+        <view class="title">挪车宝</view>
+        <view class="subtitle">智能停车计时助手</view>
+    </view>
+    <!-- Main Card -->
+    <view class="card">
+        <!-- Step 1: Start Time -->
+        <view class="section">
+            <view class="label">
+                <view class="step-num">1</view>
+                <text>什么时候停的车？</text>
+            </view>
+            <picker mode="time" value="{{startTimeStr}}" bindchange="onStartTimeChange">
+                <!-- Note: WeChat 'time' picker is only HH:mm. For full date, we need 'date' + 'time' or 'multiSelector'. 
+              For simplicity in this demo, we'll assume today and just pick time, or use a custom implementation.
+              Actually, let's use a simple input or just 'date' and 'time' separate pickers if needed.
+              But 'datetime-local' is not directly supported. 
+              Let's try to simulate a datetime picker or just use current time for simplicity + manual edit?
+              WeChat doesn't have a combined datetime picker. 
+              Let's stick to a text display that opens a picker. 
+              For now, let's just use a text view that shows the time. -->
+                <view class="time-input">{{startTimeStr}}</view>
+            </picker>
+            <!-- Fallback: Just a note that real MP needs custom picker for full datetime -->
+        </view>
+        <!-- Step 2: Billing Rules -->
+        <view class="section">
+            <view class="label-row">
+                <view class="label">
+                    <view class="step-num">2</view>
+                    <text>计费规则设置</text>
+                </view>
+                <view class="cost-stepper">
+                    <view class="icon-coin">💰</view>
+                    <view class="stepper-btn" bindtap="adjustCost" data-delta="-1">－</view>
+                    <view class="cost-val">
+                        {{cycleCost}}
+                        <text class="unit">元</text>
+                    </view>
+                    <view class="stepper-btn" bindtap="adjustCost" data-delta="1">＋</view>
+                </view>
+            </view>
+            <view class="presets-grid">
+                <block wx:for="{{presets}}" wx:key="id">
+                    <view class="preset-item {{interval === item.interval && gracePeriod === item.grace ? 'active' : ''}}" bindtap="applyPreset" data-preset="{{item}}">
+                        <view class="preset-name">{{item.name}}</view>
+                        <view class="preset-desc">{{item.desc}}</view>
+                        <view class="check-mark" wx:if="{{interval === item.interval && gracePeriod === item.grace}}">
+                            ✓
+                        </view>
+                    </view>
+                </block>
+            </view>
+            <view class="divider">
+                <view class="line"></view>
+                <view class="text">或自定义</view>
+            </view>
+            <view class="manual-grid">
+                <block wx:for="{{manualIntervals}}" wx:key="*this">
+                    <view class="manual-btn {{interval === item ? 'active' : ''}}" bindtap="setInterval" data-val="{{item}}">
+                        {{item === 60 ? '1小时/周期' : item + '分钟/周期'}}
+                    </view>
+                </block>
+            </view>
+            <view class="ai-input-group">
+                <textarea class="ai-textarea" placeholder="或者输入规则，例如：每1小时5元，前15分钟免费" value="{{ruleText}}" bindinput="onRuleInput"></textarea>
+                <button class="ai-btn {{!ruleText ? 'disabled' : ''}}" bindtap="handleAIAnalysis" disabled="{{isAnalyzing || !ruleText}}">
+                    <text wx:if="{{isAnalyzing}}">...</text>
+                    <text wx:else>✨ AI识别</text>
+                </button>
+            </view>
+            <view class="feedback" wx:if="{{aiFeedback || gracePeriod > 0}}">
+                <view class="tag ai" wx:if="{{aiFeedback}}">✨ {{aiFeedback}}</view>
+                <view class="tag grace" wx:if="{{gracePeriod > 0}}">✓ 含{{gracePeriod}}分钟免费</view>
+            </view>
+        </view>
+        <!-- Step 3: Reminder -->
+        <view class="section">
+            <view class="label">
+                <view class="step-num">3</view>
+                <text>提前多久提醒？</text>
+            </view>
+            <view class="reminder-row">
+                <block wx:for="{{reminders}}" wx:key="*this">
+                    <view class="reminder-btn {{reminder === item ? 'active' : ''}}" bindtap="setReminder" data-val="{{item}}">
+                        {{item}}分
+                    </view>
+                </block>
+                <view class="custom-reminder {{reminder !== 5 && reminder !== 10 && reminder !== 15 ? 'active' : ''}}">
+                    <view class="stepper-btn" bindtap="adjustReminder" data-delta="-1">－</view>
+                    <input type="number" class="reminder-input" value="{{reminder}}" bindinput="onReminderInput" />
+                    <text class="unit">分</text>
+                    <view class="stepper-btn" bindtap="adjustReminder" data-delta="1">＋</view>
+                </view>
+            </view>
+        </view>
+        <!-- Step 4: Location -->
+        <view class="section">
+            <view class="label-row">
+                <view class="label">
+                    <view class="step-num">4</view>
+                    <text>
+                        停车位置
+                        <text class="optional">(可选)</text>
+                    </text>
+                </view>
+                <view class="delete-btn" wx:if="{{locationImage}}" bindtap="removeImage">删除照片</view>
+            </view>
+            <view class="input-wrapper">
+                <text class="icon-pin">📍</text>
+                <input class="location-input" placeholder="例如：万象城 B2 F区 088" value="{{locationName}}" bindinput="onLocationNameInput" />
+            </view>
+            <view class="camera-box" wx:if="{{!locationImage}}" bindtap="chooseImage">
+                <view class="camera-icon-bg">
+                    <text class="icon-camera">📷</text>
+                </view>
+                <text class="camera-text">拍张照更稳妥</text>
+            </view>
+            <view class="image-preview" wx:else bindtap="chooseImage">
+                <image src="{{locationImage}}" mode="aspectFill" />
+                <view class="overlay">
+                    <view class="badge">📷 点击重拍</view>
+                </view>
+            </view>
+        </view>
+        <!-- Start Button -->
+        <view class="footer-action">
+            <button class="start-btn" bindtap="handleStart">
+                <text>开始倒计时 ➜</text>
+                <view class="shine"></view>
+            </button>
+        </view>
+    </view>
+</view>
