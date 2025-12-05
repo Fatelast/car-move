@@ -1,5 +1,5 @@
 // index.js
-const { formatTime } = require('../../utils/util')
+
 
 const app = getApp()
 
