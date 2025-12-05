@@ -1,5 +1,5 @@
 {
-  "name": "savemyparking",
+  "name": "car-move-app",
   "compatibility_date": "2025-11-28",
 
   // 部署静态资源目录（就是 Vite 的 dist 输出）
