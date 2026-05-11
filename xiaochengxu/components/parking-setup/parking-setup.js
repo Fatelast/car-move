@@ -2,10 +2,10 @@
 const { parseParkingRuleWithGemini } = require('../../services/geminiService');
 
 const PRESETS = [
-  { id: 'standard', name: '标准时租', desc: '1h/周期 · 15分免费', interval: 60, grace: 15 },
-  { id: 'mall', name: '商场严格', desc: '1h/周期 · 无免费', interval: 60, grace: 0 },
-  { id: 'roadside', name: '路边半小时', desc: '30分/周期 · 15分免费', interval: 30, grace: 15 },
-  { id: 'quick', name: '短停快走', desc: '15分/周期 · 5分免费', interval: 15, grace: 5 },
+  { id: 'standard', name: '标准时租', desc: '1小时/周期 · 15分钟免费', interval: 60, grace: 15 },
+  { id: 'mall', name: '商场严格', desc: '1小时/周期 · 无免费', interval: 60, grace: 0 },
+  { id: 'roadside', name: '路边半小时', desc: '30分钟/周期 · 15分钟免费', interval: 30, grace: 15 },
+  { id: 'quick', name: '短停快走', desc: '15分钟/周期 · 5分钟免费', interval: 15, grace: 5 },
 ];
 
 Component({
@@ -24,16 +24,15 @@ Component({
     locationImage: '',
     locationName: '',
     reminders: [5, 10, 15],
-    manualIntervals: [30, 60, 15]
+    manualIntervals: [30, 60, 15],
   },
 
   lifetimes: {
     attached() {
       const now = new Date();
-      // Format for datetime-local equivalent: YYYY-MM-DD HH:mm
-      const str = this.formatDateTimeLocal(now);
-      this.setData({ startTimeStr: str });
-    }
+      const startTimeStr = this.formatDateTimeLocal(now);
+      this.setData({ startTimeStr });
+    },
   },
 
   methods: {
@@ -51,7 +50,7 @@ Component({
     },
 
     adjustCost(e) {
-      const delta = parseInt(e.currentTarget.dataset.delta);
+      const delta = parseInt(e.currentTarget.dataset.delta, 10);
       let newCost = this.data.cycleCost + delta;
       if (newCost < 0) newCost = 0;
       if (newCost > 200) newCost = 200;
@@ -63,33 +62,33 @@ Component({
       this.setData({
         interval: preset.interval,
         gracePeriod: preset.grace,
-        aiFeedback: ''
+        aiFeedback: '',
       });
     },
 
     setInterval(e) {
-      const val = parseInt(e.currentTarget.dataset.val);
-      this.setData({ interval: val });
+      const value = parseInt(e.currentTarget.dataset.val, 10);
+      this.setData({ interval: value });
     },
 
     setReminder(e) {
-      const val = parseInt(e.currentTarget.dataset.val);
-      this.setData({ reminder: val });
+      const value = parseInt(e.currentTarget.dataset.val, 10);
+      this.setData({ reminder: value });
     },
 
     adjustReminder(e) {
-      const delta = parseInt(e.currentTarget.dataset.delta);
-      let newVal = this.data.reminder + delta;
-      if (newVal < 1) newVal = 1;
-      if (newVal > 59) newVal = 59;
-      this.setData({ reminder: newVal });
+      const delta = parseInt(e.currentTarget.dataset.delta, 10);
+      let value = this.data.reminder + delta;
+      if (value < 1) value = 1;
+      if (value > 59) value = 59;
+      this.setData({ reminder: value });
     },
 
     onReminderInput(e) {
-      let val = parseInt(e.detail.value);
-      if (isNaN(val)) val = 0;
-      if (val > 59) val = 59;
-      this.setData({ reminder: val });
+      let value = parseInt(e.detail.value, 10);
+      if (isNaN(value)) value = 0;
+      if (value > 59) value = 59;
+      this.setData({ reminder: value });
     },
 
     onRuleInput(e) {
@@ -97,21 +96,24 @@ Component({
     },
 
     async handleAIAnalysis() {
-      if (!this.data.ruleText.trim()) return;
+      if (!this.data.ruleText.trim()) {
+        return;
+      }
+
       this.setData({ isAnalyzing: true, aiFeedback: '' });
-
       const result = await parseParkingRuleWithGemini(this.data.ruleText);
-
       this.setData({ isAnalyzing: false });
+
       if (result) {
         this.setData({
           interval: result.intervalMinutes,
           gracePeriod: result.gracePeriodMinutes,
-          aiFeedback: `已自动识别: ${result.explanation}`
+          aiFeedback: `已自动识别：${result.explanation}`,
         });
-      } else {
-        this.setData({ aiFeedback: "无法识别规则，请手动设置" });
+        return;
       }
+
+      this.setData({ aiFeedback: '无法识别规则，请手动设置' });
     },
 
     onLocationNameInput(e) {
@@ -125,17 +127,13 @@ Component({
         sourceType: ['album', 'camera'],
         success: (res) => {
           const tempFilePath = res.tempFiles[0].tempFilePath;
-          // In a real app, you might want to compress or upload this.
-          // For local storage demo, we might hit size limits if we store base64.
-          // We'll store the temp path, but note it's temporary.
-          // Ideally, use wx.getFileSystemManager().saveFile to persist locally.
           wx.getFileSystemManager().saveFile({
-            tempFilePath: tempFilePath,
+            tempFilePath,
             success: (saveRes) => {
               this.setData({ locationImage: saveRes.savedFilePath });
-            }
+            },
           });
-        }
+        },
       });
     },
 
@@ -144,11 +142,8 @@ Component({
     },
 
     handleStart() {
-      // Parse startTimeStr back to timestamp
-      // WeChat picker returns YYYY-MM-DD HH:mm
-      // We need to be careful with timezone. new Date(str) usually works.
       const startTimestamp = new Date(this.data.startTimeStr.replace(/-/g, '/')).getTime();
-      
+
       this.triggerEvent('start', {
         startTime: startTimestamp,
         intervalMinutes: this.data.interval,
@@ -162,6 +157,6 @@ Component({
 
     onViewHistory() {
       this.triggerEvent('viewHistory');
-    }
-  }
-})
+    },
+  },
+});

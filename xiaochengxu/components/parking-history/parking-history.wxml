@@ -1,6 +1,5 @@
 <!-- components/parking-history/parking-history.wxml -->
 <view class="history-container animate-fade-in">
-    <!-- Header -->
     <view class="header">
         <view class="back-btn" bindtap="onBack">
             <text class="icon-back">←</text>
@@ -8,7 +7,7 @@
         <view class="title">停车记录</view>
         <view class="spacer"></view>
     </view>
-    <!-- List -->
+
     <scroll-view scroll-y class="list-scroll">
         <block wx:if="{{formattedRecords.length === 0}}">
             <view class="empty-state">
@@ -64,10 +63,10 @@
             </view>
         </block>
     </scroll-view>
-    <!-- Footer -->
+
     <view class="footer" wx:if="{{formattedRecords.length > 0}}">
         <view class="clear-btn" bindtap="onClear">
-            <text class="icon-trash">🗑️</text>
+            <text class="icon-trash">🗑</text>
             清空历史记录
         </view>
     </view>

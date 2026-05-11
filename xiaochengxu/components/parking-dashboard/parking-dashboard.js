@@ -3,15 +3,15 @@ const ParkingStatus = {
   SAFE: 'SAFE',
   WARNING: 'WARNING',
   DANGER: 'DANGER',
-  OVERTIME: 'OVERTIME'
+  OVERTIME: 'OVERTIME',
 };
 
 Component({
   properties: {
     config: {
       type: Object,
-      value: null
-    }
+      value: null,
+    },
   },
 
   data: {
@@ -26,7 +26,7 @@ Component({
     statusColor: '#10b981',
     showImageModal: false,
     showStopConfirm: false,
-    lastNotificationKey: ''
+    lastNotificationKey: '',
   },
 
   lifetimes: {
@@ -38,13 +38,15 @@ Component({
     },
     detached() {
       if (this.timer) clearInterval(this.timer);
-    }
+    },
   },
 
   methods: {
     updateState() {
-      const config = this.data.config;
-      if (!config) return;
+      const { config } = this.data;
+      if (!config) {
+        return;
+      }
 
       const now = Date.now();
       const elapsedMs = now - config.startTime;
@@ -52,56 +54,56 @@ Component({
       const currentCycleElapsedMs = elapsedMs % intervalMs;
       const msUntilNextCycle = intervalMs - currentCycleElapsedMs;
       const currentCycleIndex = Math.floor(elapsedMs / intervalMs) + 1;
-      
       const hours = Math.floor(elapsedMs / 3600000);
-      const mins = Math.floor((elapsedMs % 3600000) / 60000);
-      const totalDurationFormatted = `${hours}小时 ${mins}分钟`;
+      const minutes = Math.floor((elapsedMs % 3600000) / 60000);
+      const totalDurationFormatted = `${hours}小时 ${minutes}分钟`;
 
       let currentStatus = ParkingStatus.SAFE;
-      const remainingMins = msUntilNextCycle / 60000;
+      const remainingMinutesValue = msUntilNextCycle / 60000;
 
-      if (remainingMins <= 5) {
+      if (remainingMinutesValue <= 5) {
         currentStatus = ParkingStatus.DANGER;
-      } else if (remainingMins <= config.reminderMinutes) {
+      } else if (remainingMinutesValue <= config.reminderMinutes) {
         currentStatus = ParkingStatus.WARNING;
       }
 
       const remainingSeconds = Math.floor((msUntilNextCycle % 60000) / 1000).toString().padStart(2, '0');
-      const remainingMinutesVal = Math.floor(msUntilNextCycle / 60000);
-
+      const remainingMinutesText = Math.floor(msUntilNextCycle / 60000);
       const progressPercentage = (currentCycleElapsedMs / intervalMs) * 100;
 
       this.setData({
         now,
         totalDurationFormatted,
         remainingMs: msUntilNextCycle,
-        remainingMinutes: remainingMinutesVal,
+        remainingMinutes: remainingMinutesText,
         remainingSeconds,
         status: currentStatus,
         progressPercentage,
         cycleCount: currentCycleIndex,
-        statusColor: this.getColor(currentStatus)
+        statusColor: this.getColor(currentStatus),
       });
 
-      this.checkNotification(currentStatus, currentCycleIndex, remainingMinutesVal);
+      this.checkNotification(currentStatus, currentCycleIndex);
     },
 
     getColor(status) {
       switch (status) {
-        case ParkingStatus.SAFE: return '#10b981'; // Emerald 500
-        case ParkingStatus.WARNING: return '#f09e5c'; // Sandy Orange
-        case ParkingStatus.DANGER: return '#9b2d3b'; // Deep Red
-        default: return '#e67e5b';
+        case ParkingStatus.SAFE:
+          return '#10b981';
+        case ParkingStatus.WARNING:
+          return '#f09e5c';
+        case ParkingStatus.DANGER:
+          return '#9b2d3b';
+        default:
+          return '#e67e5b';
       }
     },
 
-    checkNotification(status, cycleCount, remainingMinutes) {
+    checkNotification(status, cycleCount) {
       if (status === ParkingStatus.WARNING || status === ParkingStatus.DANGER) {
         const currentKey = `${cycleCount}-${status}`;
         if (this.data.lastNotificationKey !== currentKey) {
-          // Trigger notification
           wx.vibrateLong();
-          
           this.setData({ lastNotificationKey: currentKey });
         }
       }
@@ -126,9 +128,9 @@ Component({
     previewImage() {
       if (this.data.config.locationImage) {
         wx.previewImage({
-          urls: [this.data.config.locationImage]
+          urls: [this.data.config.locationImage],
         });
       }
-    }
-  }
-})
+    },
+  },
+});

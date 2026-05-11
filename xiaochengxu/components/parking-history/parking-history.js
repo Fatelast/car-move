@@ -1,36 +1,35 @@
 // components/parking-history/parking-history.js
-
-
 Component({
   properties: {
     records: {
       type: Array,
-      value: []
-    }
+      value: [],
+    },
   },
 
   data: {
-    formattedRecords: []
+    formattedRecords: [],
   },
 
   observers: {
-    'records': function(records) {
-      if (!records) return;
-      // Reverse and format
-      const formatted = records.slice().reverse().map((record) => {
-        return {
-          ...record,
-          formattedDate: this.formatDate(record.startTime),
-          formattedDuration: this.formatDuration(record.totalDurationMs)
-        };
-      });
-      this.setData({ formattedRecords: formatted });
-    }
+    records(records) {
+      if (!records) {
+        return;
+      }
+
+      const formattedRecords = records.slice().reverse().map((record) => ({
+        ...record,
+        formattedDate: this.formatDate(record.startTime),
+        formattedDuration: this.formatDuration(record.totalDurationMs),
+      }));
+
+      this.setData({ formattedRecords });
+    },
   },
 
   methods: {
-    formatDate(ts) {
-      const date = new Date(ts);
+    formatDate(timestamp) {
+      const date = new Date(timestamp);
       const month = date.getMonth() + 1;
       const day = date.getDate();
       const hour = date.getHours().toString().padStart(2, '0');
@@ -40,8 +39,8 @@ Component({
 
     formatDuration(ms) {
       const hours = Math.floor(ms / 3600000);
-      const mins = Math.floor((ms % 3600000) / 60000);
-      return `${hours}小时${mins}分钟`;
+      const minutes = Math.floor((ms % 3600000) / 60000);
+      return `${hours}小时${minutes}分钟`;
     },
 
     onBack() {
@@ -56,8 +55,8 @@ Component({
           if (res.confirm) {
             this.triggerEvent('clear');
           }
-        }
+        },
       });
-    }
-  }
-})
+    },
+  },
+});
