@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:full": "npm run build && npx wrangler dev",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test worker/*.test.mjs"
