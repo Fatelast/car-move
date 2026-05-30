@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# SaveMyParking
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1Wyik9LGB6m6G0qMg3tD8tUrfxwD1OZjP
+This app includes a parking timer and an AI helper that parses parking billing rules.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Run the Vite app:
    `npm run dev`
+
+The web client calls `/api/parse-parking-rule`. In production this route is served by the Cloudflare Worker in `worker/index.js`.
+
+## Backend Gemini Key
+
+The Gemini API key must be stored only on the backend.
+
+For Cloudflare Workers local development:
+
+1. Create a local Worker secret file:
+   `echo GEMINI_API_KEY=your_gemini_key > .dev.vars`
+2. Build the frontend:
+   `npm run build`
+3. Start the Worker locally with Wrangler:
+   `npx wrangler dev`
+
+For deployed Workers, configure the secret with:
+
+`npx wrangler secret put GEMINI_API_KEY`
+
+Frontend code, browser bundles, and WeChat Mini Program code must not store production Gemini keys. Do not add `VITE_GEMINI_API_KEY`, `process.env.GEMINI_API_KEY`, hardcoded Gemini keys, or `key=` Gemini URLs to frontend code.
+
+For the mini program, update `xiaochengxu/services/geminiService.js` so `API_URL` points to your deployed backend endpoint, for example:
+
+`https://your-worker-domain.example.com/api/parse-parking-rule`

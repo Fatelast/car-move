@@ -1,9 +1,11 @@
 {
   "name": "savemyparking",
   "compatibility_date": "2025-11-28",
+  "main": "./worker/index.js",
 
-  // 部署静态资源目录（就是 Vite 的 dist 输出）
+  // Deploy the Vite static build through the Worker asset binding.
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "binding": "ASSETS"
   }
 }

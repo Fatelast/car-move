@@ -1,12 +1,16 @@
 // services/geminiService.js
 
-// Note: In WeChat Mini Program, you cannot use 'process.env'. 
-// You should configure your API key here or fetch it from your backend.
-// IMPORTANT: For production, do NOT hardcode API keys in the frontend. 
-// This is for demonstration purposes or personal use.
-const API_KEY = 'AIzaSyAigxFqzj_IzICYOylHU9MfTqfElNabBTI'; 
+const API_URL = 'https://your-worker-domain.example.com/api/parse-parking-rule';
+const USER_ID_STORAGE_KEY = 'savemyparking:user-id';
 
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+const getUserId = () => {
+  let userId = wx.getStorageSync(USER_ID_STORAGE_KEY);
+  if (!userId) {
+    userId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    wx.setStorageSync(USER_ID_STORAGE_KEY, userId);
+  }
+  return userId;
+};
 
 const parseParkingRuleWithGemini = (text) => {
   return new Promise((resolve) => {
@@ -15,46 +19,20 @@ const parseParkingRuleWithGemini = (text) => {
       method: 'POST',
       header: {
         'Content-Type': 'application/json',
+        'X-User-Id': getUserId(),
       },
-      data: {
-        contents: [{
-          parts: [{
-            text: `Parse the following parking rule text and extract the billing interval (in minutes) and grace period (in minutes). 
-            If the text says "hourly" or "per hour", interval is 60. "Half hour" is 30.
-            If no grace period is mentioned, default to 0.
-            Text: "${text}"`
-          }]
-        }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              intervalMinutes: { type: "INTEGER" },
-              gracePeriodMinutes: { type: "INTEGER" },
-              explanation: { type: "STRING" }
-            },
-            required: ["intervalMinutes", "gracePeriodMinutes", "explanation"]
-          }
-        }
-      },
+      data: { text },
       success: (res) => {
-        try {
-          if (res.statusCode === 200 && res.data && res.data.candidates && res.data.candidates.length > 0) {
-            const jsonText = res.data.candidates[0].content.parts[0].text;
-            const result = JSON.parse(jsonText);
-            resolve(result);
-          } else {
-            console.error("Gemini API Error:", res);
-            resolve(null);
-          }
-        } catch (e) {
-          console.error("Failed to parse Gemini response:", e);
-          resolve(null);
+        if (res.statusCode === 200 && res.data) {
+          resolve(res.data);
+          return;
         }
+
+        console.error('Parking rule parser request failed:', res.statusCode);
+        resolve(null);
       },
       fail: (err) => {
-        console.error("Network Request Failed:", err);
+        console.error('Network Request Failed:', err);
         resolve(null);
       }
     });
@@ -63,4 +41,4 @@ const parseParkingRuleWithGemini = (text) => {
 
 module.exports = {
   parseParkingRuleWithGemini
-}
+};
