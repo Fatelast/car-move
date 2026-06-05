@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:full": "npm run build && npx wrangler dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test worker/*.test.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.554.0",
     "react": "^19.2.0",
-    "@google/genai": "^1.30.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.5.0"
   },
